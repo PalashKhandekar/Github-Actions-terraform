@@ -4,4 +4,12 @@ resource "aws_vpc" "name" {
       Name ="My-vpc"
     }
   
+ 
+}
+resource "aws_subnet" "name" {
+    vpc_id = aws_vpc.name.id
+    cidr_block = "10.0.1.0/24"
+    tags ={
+        Name ="My-subnet"
+    }
 }
