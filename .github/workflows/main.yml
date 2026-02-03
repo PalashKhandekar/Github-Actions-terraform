@@ -1,4 +1,4 @@
-name: Scan sample.py with SonarQube
+name: Scan test.py with SonarQube
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
       #######################################
       # 1️⃣ Checkout Repository
       #######################################
-      - name: https://github.com/PalashKhandekar/Github-Actions-terraform.git
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -28,7 +28,7 @@ jobs:
           echo "Commit: $(git rev-parse HEAD)"
           echo "Files in root:"
           ls -la
-          echo "repo checked out successfully"
+          echo "Repo checked out successfully"
 
       #######################################
       # 2️⃣ Verify test.py exists
@@ -68,29 +68,22 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "=============================="
-          echo "Starting Sonar scan for test.py"
-          echo "Sonar Host: $SONAR_HOST_URL"
-          echo "=============================="
+          echo "Running Sonar scan in DEBUG mode..."
 
-          sonar-scanner \
+          sonar-scanner -X \
             -Dsonar.projectKey=sample-python-project \
-            -Dsonar.projectName=sample-python-project \
             -Dsonar.sources=. \
             -Dsonar.inclusions=test.py \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.login=$SONAR_TOKEN
-
-          echo "=============================="
-          echo "Sonar scan finished"
-          echo "=============================="
 
       #######################################
       # Final Marker
       #######################################
       - name: Pipeline completed
         run: |
-          echo "Scan Started"
+          echo "=============================="
+          echo "Scan completed"
           echo "GitHub Actions job finished"
           echo "Check SonarQube dashboard for results"
-          echo "Scan Completed pls check results"
+          echo "=============================="
