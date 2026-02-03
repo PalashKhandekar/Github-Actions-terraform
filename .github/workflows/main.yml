@@ -74,8 +74,8 @@ jobs:
             -Dsonar.projectKey=sample-python-project \
             -Dsonar.sources=. \
             -Dsonar.inclusions=test.py \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.host.url=http://3.84.133.97:9000  \
+            -Dsonar.login=squ_047579d02ea204f5e52089ddf98dba20a4cabb10
 
       #######################################
       # Final Marker
