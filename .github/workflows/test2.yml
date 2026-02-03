@@ -1,4 +1,4 @@
-name: CI with SonarQube + EC2 Integration
+name: Scan sample.py with SonarQube
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     steps:
 
       #######################################
-      # 1️⃣ Checkout Code
+      # 1️⃣ Checkout Repository
       #######################################
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,17 +23,27 @@ jobs:
       - name: Confirm checkout
         run: |
           echo "=============================="
-          echo "Repo checked out"
-          git rev-parse HEAD
+          echo "Repo cloned"
+          echo "Branch: $(git branch --show-current)"
+          echo "Commit: $(git rev-parse HEAD)"
+          echo "Files in root:"
           ls -la
-          echo "=============================="
+          echo "repo checked out successfully"
 
       #######################################
-      # 2️⃣ Install Sonar Scanner
+      # 2️⃣ Verify sample.py exists
       #######################################
-      - name: Install SonarQube Scanner
+      - name: Locate sample.py
         run: |
-          echo "Installing Sonar Scanner..."
+          echo "Searching for sample.py..."
+          find . -name "sample.py"
+
+      #######################################
+      # 3️⃣ Install SonarQube Scanner
+      #######################################
+      - name: Install Sonar Scanner
+        run: |
+          echo "Installing SonarQube Scanner..."
           sudo apt-get update
           sudo apt-get install -y unzip curl
 
@@ -42,55 +52,45 @@ jobs:
 
           unzip sonar-scanner.zip
           sudo mv sonar-scanner-* /opt/sonar-scanner
+
           echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
 
-      - name: Verify scanner
-        run: sonar-scanner --version
+      - name: Verify scanner install
+        run: |
+          echo "Sonar Scanner version:"
+          sonar-scanner --version
 
       #######################################
-      # 3️⃣ Run Sonar Scan
+      # 4️⃣ Run SonarQube Scan for sample.py
       #######################################
-      - name: Run SonarQube Scan
+      - name: Run Sonar Scan (sample.py only)
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "Running Sonar scan..."
+          echo "=============================="
+          echo "Starting Sonar scan for test.py"
+          echo "Sonar Host: $SONAR_HOST_URL"
+          echo "=============================="
+
           sonar-scanner \
-            -Dsonar.projectKey=my-project \
+            -Dsonar.projectKey=sample-python-project \
+            -Dsonar.projectName=sample-python-project \
             -Dsonar.sources=. \
+            -Dsonar.inclusions=test.py \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.login=$SONAR_TOKEN
 
-      #######################################
-      # 4️⃣ Configure AWS Credentials
-      #######################################
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-
-      #######################################
-      # 5️⃣ SSH into EC2 and Run Commands
-      #######################################
-      - name: Check SonarQube EC2 status
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "Connected to EC2"
-            docker ps
-            docker logs sonarqube --tail 20
+          echo "=============================="
+          echo "Sonar scan finished"
+          echo "=============================="
 
       #######################################
       # Final Marker
       #######################################
-      - name: Pipeline finished
+      - name: Pipeline completed
         run: |
-          echo "=============================="
-          echo "Pipeline completed"
-          echo "=============================="
+          echo "Scan Started"
+          echo "GitHub Actions job finished"
+          echo "Check SonarQube dashboard for results"
+          echo "Scan Completed pls check results"
