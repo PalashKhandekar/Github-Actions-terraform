@@ -35,8 +35,8 @@ jobs:
       #######################################
       - name: Locate sample.py
         run: |
-          echo "Searching for sample.py..."
-          find . -name "sample.py"
+          echo "Searching for test.py..."
+          find . -name "test.py"
 
       #######################################
       # 3️⃣ Install SonarQube Scanner
@@ -61,9 +61,9 @@ jobs:
           sonar-scanner --version
 
       #######################################
-      # 4️⃣ Run SonarQube Scan for sample.py
+      # 4️⃣ Run SonarQube Scan for test.py
       #######################################
-      - name: Run Sonar Scan (sample.py only)
+      - name: Run Sonar Scan (test.py only)
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
