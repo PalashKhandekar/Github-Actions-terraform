@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  sonar-ci:
+  Checkout-repo:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +29,10 @@ jobs:
           echo "Files in root:"
           ls -la
           echo "Repo checked out successfully"
+
+    jobs:
+      Verify files from repo:
+    
 
       #######################################
       # 2️⃣ Verify test.py exists
