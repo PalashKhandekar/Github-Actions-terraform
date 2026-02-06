@@ -7,14 +7,14 @@ on:
   pull_request:
 
 jobs:
-  Checkout-repo:
+
+  #######################################
+  # JOB 1 — Checkout Repo
+  #######################################
+  checkout:
     runs-on: ubuntu-latest
 
     steps:
-
-      #######################################
-      # 1️⃣ Checkout Repository
-      #######################################
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -26,28 +26,38 @@ jobs:
           echo "Repo cloned"
           echo "Branch: $(git branch --show-current)"
           echo "Commit: $(git rev-parse HEAD)"
-          echo "Files in root:"
           ls -la
-          echo "Repo checked out successfully"
 
-    jobs:
-      Verify files from repo:
-    
+  #######################################
+  # JOB 2 — Verify test.py exists
+  #######################################
+  verify-file:
+    runs-on: ubuntu-latest
+    needs: checkout
 
-      #######################################
-      # 2️⃣ Verify test.py exists
-      #######################################
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Locate test.py
         run: |
           echo "Searching for test.py..."
           find . -name "test.py"
 
+  #######################################
+  # JOB 3 — Sonar Scan
+  #######################################
+  sonar-scan:
+    runs-on: ubuntu-latest
+    needs: verify-file
+
+    steps:
+      - uses: actions/checkout@v4
+
       #######################################
-      # 3️⃣ Install SonarQube Scanner
+      # Install Scanner
       #######################################
       - name: Install Sonar Scanner
         run: |
-          echo "Installing SonarQube Scanner..."
           sudo apt-get update
           sudo apt-get install -y unzip curl
 
@@ -56,38 +66,19 @@ jobs:
 
           unzip sonar-scanner.zip
           sudo mv sonar-scanner-* /opt/sonar-scanner
-
           echo "/opt/sonar-scanner/bin" >> $GITHUB_PATH
 
-      - name: Verify scanner install
-        run: |
-          echo "Sonar Scanner version:"
-          sonar-scanner --version
-
       #######################################
-      # 4️⃣ Run SonarQube Scan for test.py
+      # Run Scan
       #######################################
       - name: Run Sonar Scan (test.py only)
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          echo "Running Sonar scan in DEBUG mode..."
-
           sonar-scanner -X \
             -Dsonar.projectKey=sample-python-project \
             -Dsonar.sources=. \
             -Dsonar.inclusions=test.py \
-            -Dsonar.host.url=http://3.84.133.97:9000  \
-            -Dsonar.login=squ_047579d02ea204f5e52089ddf98dba20a4cabb10
-
-      #######################################
-      # Final Marker
-      #######################################
-      - name: Pipeline completed
-        run: |
-          echo "=============================="
-          echo "Scan completed"
-          echo "GitHub Actions job finished"
-          echo "Check SonarQube dashboard for results"
-          echo "=============================="
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.login=$SONAR_TOKEN
